@@ -59,9 +59,8 @@ export function useStore<TStore, TSelected = TStore>(
   store: ReturnType<typeof createStore<TStore>>,
   selector?: (state: TStore) => TSelected
 ) {
-  return useSyncExternalStore(
-    store.subscribe,
-    () => (selector ? selector(store.getState()) : store.getState()),
-    () => (selector ? selector(store.getState()) : store.getState())
-  );
+  const getSnapshot = () =>
+    selector ? selector(store.getState()) : store.getState();
+
+  return useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot);
 }

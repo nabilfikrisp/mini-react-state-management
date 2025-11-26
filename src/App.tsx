@@ -1,12 +1,14 @@
 import "./App.css";
-import FirstComponent from "./components/first-component";
-import SecondComponent from "./components/second-component";
+import Actions from "./components/actions";
+import Count from "./components/count";
+import Other from "./components/other";
 
 function App() {
   return (
     <div>
-      <FirstComponent />
-      <SecondComponent />
+      <Count />
+      <Other />
+      <Actions />
     </div>
   );
 }
