@@ -1,26 +1,48 @@
 import { useSyncExternalStore } from "react";
 
-export function createStore<T>(initialValue: T) {
-  let state = initialValue;
-  const listeners = new Set<(state: T) => void>();
+export type Store<TState, TActions extends object = object> = {
+  getState: () => TState;
+  setState: (partial: Partial<TState>) => void;
+  subscribe: (listener: () => void) => () => void;
+} & TActions;
+
+export function createStore<TState, TActions extends object = object>(
+  initialState: TState,
+  actionsFactory?: (helpers: {
+    getState: () => TState;
+    setState: (partial: Partial<TState>) => void;
+  }) => TActions
+) {
+  let state = initialState;
+  const listeners = new Set<(state: TState) => void>();
+
+  const actions = actionsFactory
+    ? actionsFactory({
+        getState,
+        setState,
+      })
+    : ({} as TActions);
 
   function getState() {
     return state;
   }
 
-  function setState(partial: Partial<T>) {
+  function setState(partial: Partial<TState>) {
     state = { ...state, ...partial };
     listeners.forEach((listener) => listener(state));
   }
-  function subscribe(listener: (state: T) => void) {
+
+  function subscribe(listener: (state: TState) => void) {
     listeners.add(listener);
     return () => listeners.delete(listener);
   }
 
   return {
+    state: initialState,
     getState,
     setState,
     subscribe,
+    ...actions,
   };
 }
 
