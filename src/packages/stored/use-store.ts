@@ -8,12 +8,10 @@ export function createStore<T>(initialValue: T) {
     return state;
   }
 
-  function setState(newState: T) {
-    if (newState === state) return;
-    state = newState;
+  function setState(partial: Partial<T>) {
+    state = { ...state, ...partial };
     listeners.forEach((listener) => listener(state));
   }
-
   function subscribe(listener: (state: T) => void) {
     listeners.add(listener);
     return () => listeners.delete(listener);
@@ -26,6 +24,8 @@ export function createStore<T>(initialValue: T) {
   };
 }
 
-export function useStore<T>(store: ReturnType<typeof createStore<T>>) {
-  return useSyncExternalStore(store.subscribe, store.getState);
+export function useStore<TStore>(
+  store: ReturnType<typeof createStore<TStore>>
+) {
+  return useSyncExternalStore(store.subscribe, store.getState, store.getState);
 }
