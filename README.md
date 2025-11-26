@@ -1,75 +1,90 @@
-# React + TypeScript + Vite
+# Mini React State Management
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A learning project to understand how React state management libraries work under the hood.
 
-Currently, two official plugins are available:
+## What I Built
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+A minimal state management solution using React's `useSyncExternalStore` API. It's similar to Zustand but stripped down to the basics.
 
-## React Compiler
+## How It Works
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+### Create a Store
 
-Note: This will impact Vite dev & build performances.
+```typescript
+import { createStore } from "./stored";
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
+export const countStore = createStore(
+  { count: 0, other: "hello" },
+  ({ getState, setState }) => ({
+    increment: () => {
+      const { count } = getState();
+      setState({ count: count + 1 });
     },
-  },
-])
+    decrement: () => {
+      const { count } = getState();
+      setState({ count: count - 1 });
+    },
+  })
+);
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Use in Components
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+**Read state:**
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```typescript
+import { useStore } from "./stored";
+import { countStore } from "./store/count.store";
+
+function Count() {
+  const count = useStore(countStore, (state) => state.count);
+  return <p>Count: {count}</p>;
+}
+```
+
+**Trigger actions:**
+
+```typescript
+function Actions() {
+  return (
+    <div>
+      <button onClick={countStore.increment}>+</button>
+      <button onClick={countStore.decrement}>-</button>
+    </div>
+  );
+}
+```
+
+## Key Concepts I Learned
+
+1. **Subscription Pattern**: Components subscribe to state changes and get notified when state updates
+2. **Selectors**: Only re-render when the specific data you're watching changes
+3. **External Store**: State lives outside React's component tree but integrates seamlessly
+4. **useSyncExternalStore**: React 18's hook for subscribing to external stores
+
+## Important Patterns
+
+**Always use selectors:**
+
+```typescript
+// ✅ Only re-renders when count changes
+const count = useStore(countStore, (state) => state.count);
+
+// ❌ Re-renders on ANY state change
+const { count } = useStore(countStore);
+```
+
+**Separate reading from actions:**
+
+```typescript
+// Component that reads (re-renders on state change)
+function Display() {
+  const count = useStore(countStore, (state) => state.count);
+  return <p>{count}</p>;
+}
+
+// Component that only triggers actions (never re-renders)
+function Controls() {
+  return <button onClick={countStore.increment}>+</button>;
+}
 ```
