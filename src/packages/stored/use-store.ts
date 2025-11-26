@@ -24,8 +24,22 @@ export function createStore<T>(initialValue: T) {
   };
 }
 
+export function useStore<TStore, TSelected>(
+  store: ReturnType<typeof createStore<TStore>>,
+  selector: (state: TStore) => TSelected
+): TSelected;
+
 export function useStore<TStore>(
   store: ReturnType<typeof createStore<TStore>>
+): TStore;
+
+export function useStore<TStore, TSelected = TStore>(
+  store: ReturnType<typeof createStore<TStore>>,
+  selector?: (state: TStore) => TSelected
 ) {
-  return useSyncExternalStore(store.subscribe, store.getState, store.getState);
+  return useSyncExternalStore(
+    store.subscribe,
+    () => (selector ? selector(store.getState()) : store.getState()),
+    () => (selector ? selector(store.getState()) : store.getState())
+  );
 }
