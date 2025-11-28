@@ -4,7 +4,7 @@ A learning project to understand how React state management libraries work under
 
 ## What I Built
 
-A minimal state management solution using React's `useSyncExternalStore` API. It's similar to Zustand but stripped down to the basics.
+A minimal state management solution using React's `useSyncExternalStore` API. It's similar to Zustand but stripped down to the basics. changed from wsl.
 
 ## How It Works
 
